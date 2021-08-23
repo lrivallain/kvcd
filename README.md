@@ -38,13 +38,13 @@ Director data:
 * storageLeaseInSeconds
 * metadata
 
-If a deviation is detected with the declared `specs` of the object: a reconcialiation is made to apply the state from
+If a deviation is detected with the declared `specs` of the object: a reconciliation is made to apply the state from
 the declared `specs`.
 
-> It may remains some use-case where the reconcialiation will fail like when trying to apply a
+> It may remains some use-case where the reconciliation will fail like when trying to apply a
 power-on expected state on an *expired* object.*
 
-The same reconcialiation process will occurs when a change is made to the `specs` object declaration to apply changes
+The same reconciliation process will occurs when a change is made to the `specs` object declaration to apply changes
 to the *backing* object on vCloud Director.
 
 > Modification of some `specs` properties will be ignored, such as `org`, `vdc`, `fence_mode` or `accept_all_eulas`.
