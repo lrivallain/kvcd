@@ -1,0 +1,136 @@
+---
+### vCloud vApp
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: vcdvapps.kvcd.lrivallain.dev
+spec:
+  scope: Namespaced
+  group: kvcd.lrivallain.dev
+  names:
+    kind: VcdVapp
+    plural: vcdvapps
+    singular: vcdvapp
+    shortNames:
+    - vapps
+    - vapp
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        required: ["spec"]
+        properties:
+          metadata:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: vApp name
+                # annotations:
+                #   type: object
+                #   description: Annotations on the object will be replicated in vCloud in object's metadata
+          spec:
+            type: object
+            required: ["org", "vdc"]
+            properties:
+              description:
+                type: string
+                description: vApp description
+              org:
+                type: string
+                nullable: false
+                description: Parent organization. Creation only.
+              vdc:
+                type: string
+                nullable: false
+                description: vApp parent Org VDC name. Creation only.
+              fence_mode:
+                type: string
+                default: 'bridged'
+                description: vApp fence policy. One of bridged, isolated, direct, natRouted. Defaults to bridged. Creation only.
+              accept_all_eulas:
+                type: boolean
+                default: true
+                description: Automatically accept EULA if OVA has it. Default is true. Creation only.
+              owner:
+                type: string
+                description: |
+                  Set a specific user as vApp owner. By default: the operator service account is the vApp owner.
+              powered_on:
+                type: boolean
+                default: false
+                description: Expected power-state of the vApp. Default is false.
+              force_delete:
+                type: boolean
+                default: false
+                description: Force deletion on delete action. Default is false.
+              deploymentLeaseInSeconds:
+                type: integer
+                default: 0
+                description: Specifies the duration of the deployment lease in seconds. Default is 0 (aka never expire).
+              storageLeaseInSeconds:
+                type: integer
+                default: 0
+                description: Specifies the duration of the storage lease in seconds. Default is 0 (aka never expire). 
+              source_catalog:
+                type: string
+                description: Name of the catalog if the vApp must be instantiated from a specific template.
+              source_template_name:
+                type: string
+                description: Name of the catalog if the vApp must be instantiated from a specific template.
+            x-kubernetes-preserve-unknown-fields: true
+          status:
+            type: object
+            properties:
+              backing:
+                type: object
+                description: Data from the vCloud system
+                properties:
+                  uuid:
+                    type: string
+                    default: null
+                    description: vApp UUID on vCloud
+                  status:
+                    type: string
+                    default: "Creating"
+                    description: Current state of the vApp based on vCloud ones + ['missing', 'creating']
+                  vcd_vapp_href:
+                    type: string
+                    description: href of the current vApp when created and existing on backend
+                  vcd_vdc_href:
+                    type: string
+                    description: href of the parent Org vDC when vApp is created and existing on backend
+                  owner:
+                    type: string
+                    description: Username of the current vApp owner
+                  deploymentLeaseInSeconds:
+                    type: integer
+                    description: Specifies the duration of the deployment lease in seconds
+                  storageLeaseInSeconds:
+                    type: integer
+                    description: Specifies the duration of the storage lease in seconds
+                  metadata:
+                    type: object
+                    description: List of metadata from the vApp on vCloud
+                    x-kubernetes-preserve-unknown-fields: true
+            x-kubernetes-preserve-unknown-fields: true
+    additionalPrinterColumns:
+    - name: org
+      type: string
+      jsonPath: .spec.org
+      description: Organization name
+    - name: vdc
+      type: string
+      jsonPath: .spec.vdc
+      description: Org vDC
+    - name: status
+      type: string
+      jsonPath: .status.backing.status
+      description: Status
+    - name: uuid
+      type: string
+      jsonPath: .status.backing.uuid
+      description: Object UUID
