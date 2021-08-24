@@ -86,36 +86,36 @@ pip install .
 Create a `.venv` file with the following content, according to your setup:
 
 ```bash
-# Hostname of the vCloud instance
-KVCD_VCD_HOST=vcloud.domain # mandatory
+# Hostname of the vCloud instance | mandatory
+KVCD_VCD_HOST=vcloud.domain
 
-# HTTPS port to the vCloud instance
-KVCD_VCD_PORT=443 # optional: 443 by default
+# HTTPS port to the vCloud instance | optional: 443 by default
+KVCD_VCD_PORT=443
 
-# Organisation of the vCloud user
-KVCD_VCD_ORG=orgX # mandatory
+# Organisation of the vCloud user | mandatory
+KVCD_VCD_ORG=orgX
 
-# vCloud credentials to use as a service account
-KVCD_VCD_USERNAME=kvcd-svc # mandatory
-KVCD_VCD_PASSWORD=********** # mandatory
+# vCloud credentials to use as a service account | mandatory
+KVCD_VCD_USERNAME=kvcd-svc
+KVCD_VCD_PASSWORD=**********
 
-# Verify the SSL certificate to connect to vCD instance
-KVCD_VCD_VERIFY_SSL=yes # optional: yes by default
+# Verify the SSL certificate to connect to vCD instance | optional: yes by default
+KVCD_VCD_VERIFY_SSL=yes
 
-# Delay between two refresh of the vCD session
-KVCD_VCD_REFRESH_SESSION_INTERVAL=3600 # optional: 3600 by default
+# Delay between two refresh of the vCD session | optional: 3600 by default
+KVCD_VCD_REFRESH_SESSION_INTERVAL=3600
 
-# Refresh interval of the vCloud instance data for each object
-KVCD_REFRESH_INTERVAL=10 # optional: 10 by default
+# Refresh interval of the vCloud instance data for each object | optional: 10 by default
+KVCD_REFRESH_INTERVAL=10
 
-# Warming up duration
-KVCD_REFRESH_INITIAL_DELAY=30 # optional: 30 by default
+# Warming up duration | optional: 30 by default
+KVCD_REFRESH_INITIAL_DELAY=30
 
-# Reduce the number of timer checks when the ressource is changed
-KVCD_REFRESH_IDLE_DELAY=10 # optional: 10 by default
+# Reduce the number of timer checks when the ressource is changed | optional: 10 by default
+KVCD_REFRESH_IDLE_DELAY=10
 ```
 
-#### Test namespace
+### Test namespace
 
 For the test, we will deploy a test namespace on the Kubernetes cluster:
 
@@ -134,19 +134,39 @@ kubectl apply -f https://github.com/lrivallain/kvcd/releases/download/${KVCD_VER
 
 This will deploy the definitions of objects that are managed by the current operator.
 
-### Run locally
+### Run it
 
 The current PoC can be run locally or be embeded in a Kubernetes deployment (with pods, service...).
 
-The local deployment is easier to debug and troubleshoot but requires that the script remain running to manage resources.
+* The local deployment is easier to debug and troubleshoot but requires that the script remain running
+to manage resources.
+* The embeded deployment is probably a better choice for a real-use-case but may be more complexe to troubleshoot.
 
-The embeded deployment is probably a better choice for a real-use-case but may be more complexe to troubleshoot.
+#### Run locally
 
-For the early versions, the documentation will only cover a local execution of the operator backend.
+From your dev machine, with access to the Kubernetes cluster, run the following:
 
 ```bash
 # Run operator with kopf command and listen to specific namespaces
 kopf run -m kvcd.main --namespace="test-kvcd" --verbose
+```
+
+#### Run in your K8S cluster
+
+To run the operator in the Kubernetes cluster itself, a new namespace `kvcd-system` is used.
+You can deploy the required components by running:
+
+```bash
+kubectl apply -f https://github.com/lrivallain/kvcd/releases/download/${KVCD_VERSION}/operator-deployment.yaml
+
+# convert the local .env file to a configMap
+kubectl create configmap -n kvcd-system kvcd-config --from-env-file=.env
+
+# ensure that the expected pod is running
+kubectl get pod -n kvcd-system
+
+# checking logs
+kubectl logs -n kvcd-system -f deployment/kvcd-operator
 ```
 
 ### Test
@@ -189,4 +209,10 @@ You can now edit fields values, delete or manage the vApp like a kube object.
 ```bash
 kubectl delete -n test-kvcd vcdvapp kvcd-test-vapp1
 kubectl delete namespace test-kvcd
+```
+
+If you did deploy the operator in the cluster and you want to remove it:
+
+```bash
+kubectl delete ns kvcd-system
 ```
