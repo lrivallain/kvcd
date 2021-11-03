@@ -113,6 +113,10 @@ KVCD_REFRESH_INITIAL_DELAY=30
 
 # Reduce the number of timer checks when the ressource is changed | optional: 10 by default
 KVCD_REFRESH_IDLE_DELAY=10
+
+# If you only need a sub part of kvcd, you can cherry pick some modules
+# (coma separated syntax) | all by default
+# KVCD_ENABLED_MODULES=kvcdusers
 ```
 
 ### Test namespace
