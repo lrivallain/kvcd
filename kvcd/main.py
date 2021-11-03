@@ -12,6 +12,7 @@ from dotenv import load_dotenv, find_dotenv
 from kvcd.vmware.vcloud_helper import VcdSession
 from kvcd.utils import setInterval
 from kvcd.config import KvcdConfig
+from kvcd import _available_modules
 
 
 logger = logging.getLogger(__name__)
@@ -71,12 +72,25 @@ def refresh_vcdsession():
         )
 
 
-# Import the resources management functions
-from kvcd.vmware.vcloud_vapp import create_vcdvapp
-from kvcd.vmware.vcloud_vapp import delete_vcdvapp
-from kvcd.vmware.vcloud_vapp import update_vcdvapp_description
-from kvcd.vmware.vcloud_vapp import update_vcdvapp_power_state
-from kvcd.vmware.vcloud_vapp import update_vcdvapp_owner
-from kvcd.vmware.vcloud_vapp import update_vcdvapp_lease_info
-from kvcd.vmware.vcloud_vapp import update_vcdvapp_metadata
-from kvcd.vmware.vcloud_vapp import refresh_vcdvapp
+# Import the resources management functions according to the configuration
+logger.debug(f"Available modules: {_available_modules}")
+logger.debug(f"Enabled modules: {kvcd_config.enabled_modules}")
+for kvcd_module in _available_modules:
+    if kvcd_module in kvcd_config.enabled_modules:
+        logger.debug(f"Importing {kvcd_module} components")
+        if kvcd_module == "kvcdvapps":
+            from kvcd.vmware.vcdvapps import create_vcdvapp
+            from kvcd.vmware.vcdvapps import delete_vcdvapp
+            from kvcd.vmware.vcdvapps import update_vcdvapp_description
+            from kvcd.vmware.vcdvapps import update_vcdvapp_power_state
+            from kvcd.vmware.vcdvapps import update_vcdvapp_owner
+            from kvcd.vmware.vcdvapps import update_vcdvapp_lease_info
+            from kvcd.vmware.vcdvapps import update_vcdvapp_metadata
+            from kvcd.vmware.vcdvapps import refresh_vcdvapp
+        # elif kvcd_module == "kvcdusers":
+        #     from kvcd.vmware.vcdusers import create_vcduser
+        #     from kvcd.vmware.vcdusers import delete_vcduser
+        #     from kvcd.vmware.vcdusers import update_vcduser
+        #     from kvcd.vmware.vcdusers import refresh_vcduser
+    else:
+        logger.debug(f"Module {kvcd_module} is not enabled")

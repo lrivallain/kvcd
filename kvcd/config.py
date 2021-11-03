@@ -6,6 +6,7 @@ The main configuration is handled by `environ-config` module.
 
 import environ
 import logging
+from kvcd import _available_modules
 
 logger = logging.getLogger(__name__)
 
@@ -54,3 +55,8 @@ class KvcdConfig:
         default=60,
         help="Reduce the number of timer checks when the ressource is changed",
         converter=int)
+    enabled_modules = environ.var(
+        default=",".join(_available_modules),
+        help="Enable a sublist of modules: all by default",
+        converter=lambda x: [m.strip() for m in x.split(',')]
+    )
